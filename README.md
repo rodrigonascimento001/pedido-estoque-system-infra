@@ -20,6 +20,35 @@ Para observabilidade local, configure DD_API_KEY no arquivo .env (copie .env.exa
 
 Configure também o perfil Datadog no .env do repositório de aplicação para habilitar a instrumentação correspondente.
 
+## Keycloak local (login da aplicação)
+
+O stack inclui um Keycloak para desenvolvimento local, publicado somente no loopback do host em http://localhost:8180. O container também entra na rede pedido-estoque-network com DNS keycloak; o gateway usa essa rota interna para buscar as chaves públicas do realm. A configuração start-dev e as credenciais abaixo são apenas para desenvolvimento local, não para ambientes implantados.
+
+Na primeira execução, copie e edite o arquivo de ambiente:
+
+    Copy-Item .env.example .env
+    notepad .env
+
+Troque KEYCLOAK_ADMIN_PASSWORD e mantenha o arquivo .env local. Depois inicie a infraestrutura normalmente:
+
+    docker compose up -d
+    docker compose ps
+
+Aguarde o container keycloak ficar saudável. O realm pedido-estoque é importado de keycloak/realm/pedido-estoque-realm.json. Alterações no arquivo de import são aplicadas quando o realm ainda não existe; para reaplicar a configuração em um ambiente descartável, pare e remova somente o container Keycloak antes de subir novamente. Não remova volumes de banco usados pelos outros serviços.
+
+Acesse o console em http://localhost:8180/admin/ com as credenciais KEYCLOAK_ADMIN_USERNAME e KEYCLOAK_ADMIN_PASSWORD. No realm pedido-estoque, crie um usuário de desenvolvimento e defina uma senha local. Não habilite o fluxo Direct Access Grants.
+
+Para autenticar pela collection Insomnia:
+
+1. Em uma requisição protegida, abra Auth e escolha OAuth 2.0 com grant Authorization Code.
+2. Configure Authorize URL como http://localhost:8180/realms/pedido-estoque/protocol/openid-connect/auth e Access Token URL como http://localhost:8180/realms/pedido-estoque/protocol/openid-connect/token.
+3. Use o client ID pedido-estoque-local, deixe o client secret vazio, defina scope openid e PKCE S256.
+4. Use o redirect URI https://app.insomnia.rest/oauth/redirect, entre com o usuário criado no realm e obtenha o token.
+5. Copie o access token para a variável token do environment da collection. As requisições enviam esse valor como Authorization: Bearer.
+
+O issuer esperado é http://localhost:8180/realms/pedido-estoque; dentro do Docker, as chaves ficam em http://keycloak:8080/realms/pedido-estoque/protocol/openid-connect/certs. O access token local inclui a audience pedido-estoque-api, exigida pelo gateway. O client público usa Authorization Code com PKCE e não guarda client secret.
+
+Para mudar porta, imagem, hostname do issuer ou credenciais locais, ajuste as variáveis KEYCLOAK_* no .env. A configuração do issuer no ambiente da aplicação deve corresponder exatamente ao claim iss do token.
 ## LocalStack (Secrets Manager e SSM)
 
 Para testar o fluxo com AWS localmente, sem nuvem real, suba o LocalStack com o profile dedicado:

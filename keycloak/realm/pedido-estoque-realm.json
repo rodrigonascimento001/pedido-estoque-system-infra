@@ -1,0 +1,44 @@
+{
+  "realm": "pedido-estoque",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "clients": [
+    {
+      "clientId": "pedido-estoque-local",
+      "name": "Pedido Estoque Local",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["https://app.insomnia.rest/oauth/redirect"],
+      "webOrigins": ["https://app.insomnia.rest"],
+      "attributes": {"pkce.code.challenge.method": "S256"},
+      "defaultClientScopes": ["pedido-estoque-api"]
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "pedido-estoque-api",
+      "description": "Audience for the Pedido Estoque API",
+      "protocol": "openid-connect",
+      "attributes": {"include.in.token.scope": "true", "display.on.consent.screen": "false"},
+      "protocolMappers": [
+        {
+          "name": "pedido-estoque-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "pedido-estoque-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ]
+}
