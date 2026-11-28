@@ -132,6 +132,21 @@ services:
       start_period: 30s
     networks:
       - pedido-estoque-network
+  keycloak-user-registration-bootstrap:
+    image: ${KEYCLOAK_IMAGE:-quay.io/keycloak/keycloak:26.8.2}
+    entrypoint: ["/bin/bash", "/opt/keycloak/bootstrap/initialize-user-registration-client.sh"]
+    environment:
+      KEYCLOAK_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-local-only-change-me}
+      KEYCLOAK_USER_REGISTRATION_CLIENT_SECRET: ${KEYCLOAK_USER_REGISTRATION_CLIENT_SECRET:?Configure KEYCLOAK_USER_REGISTRATION_CLIENT_SECRET in the local .env}
+    volumes:
+      - ./keycloak/bootstrap:/opt/keycloak/bootstrap:ro
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - pedido-estoque-network
   datadog-agent:
     image: gcr.io/datadoghq/agent:7
     profiles: ["observability"]
