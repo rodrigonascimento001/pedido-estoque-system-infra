@@ -4,6 +4,12 @@
   "sslRequired": "none",
   "registrationAllowed": false,
   "loginWithEmailAllowed": true,
+  "roles": {
+    "realm": [
+      {"name": "customer", "description": "Creates and reads their own orders"},
+      {"name": "operator", "description": "Manages inventory and reads any order"}
+    ]
+  },
   "clients": [
     {
       "clientId": "pedido-estoque-local",
@@ -36,6 +42,20 @@
             "included.custom.audience": "pedido-estoque-api",
             "id.token.claim": "false",
             "access.token.claim": "true"
+          }
+        },
+        {
+          "name": "realm-roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "userinfo.token.claim": "false"
           }
         }
       ]
