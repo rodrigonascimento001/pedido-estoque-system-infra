@@ -75,3 +75,9 @@ O comando não remove os volumes nomeados dos bancos. Não use a opção -v se q
 ## Configuração
 
 Os valores padrão das credenciais e portas são para desenvolvimento local. Este Compose não define a configuração de produção nem endurece a operação dos serviços.
+
+## Cadastro de usuários da aplicação
+
+O Compose cria, após o Keycloak ficar saudável, o cliente confidencial `pedido-estoque-user-registration` no realm `pedido-estoque`, concede apenas a role `manage-users` do `realm-management` e associa o client scope padrão `kc-admin-api`, necessário para o Admin API aceitar o token no Keycloak 26.8. A credencial do administrador é usada somente pelo bootstrap local; o serviço de cadastro usa seu próprio client ID/secret via client credentials.
+
+Defina `KEYCLOAK_USER_REGISTRATION_CLIENT_SECRET` no `.env` local antes de subir os serviços. Use o mesmo valor no `.env` do repositório da aplicação. Esse secret não deve ser enviado ao Git. Para o fluxo local, o novo serviço fica acessível pelo gateway em `POST http://localhost:8080/api/usuarios`; ele não publica porta própria no host.
