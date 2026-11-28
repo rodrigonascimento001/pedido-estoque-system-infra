@@ -147,6 +147,22 @@ services:
     restart: "no"
     networks:
       - pedido-estoque-network
+  keycloak-business-roles-bootstrap:
+    image: ${KEYCLOAK_IMAGE:-quay.io/keycloak/keycloak:26.8.2}
+    entrypoint: ["/bin/bash", "/opt/keycloak/bootstrap/initialize-business-roles.sh"]
+    environment:
+      KEYCLOAK_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-local-only-change-me}
+      KEYCLOAK_LOCAL_OPERATOR_USERNAME: ${KEYCLOAK_LOCAL_OPERATOR_USERNAME:-local.operator}
+      KEYCLOAK_LOCAL_OPERATOR_PASSWORD: ${KEYCLOAK_LOCAL_OPERATOR_PASSWORD:-}
+    volumes:
+      - ./keycloak/bootstrap:/opt/keycloak/bootstrap:ro
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - pedido-estoque-network
   datadog-agent:
     image: gcr.io/datadoghq/agent:7
     profiles: ["observability"]

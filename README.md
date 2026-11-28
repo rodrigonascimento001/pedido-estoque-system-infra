@@ -76,6 +76,18 @@ O comando não remove os volumes nomeados dos bancos. Não use a opção -v se q
 
 Os valores padrão das credenciais e portas são para desenvolvimento local. Este Compose não define a configuração de produção nem endurece a operação dos serviços.
 
+## Roles de negócio
+
+O realm `pedido-estoque` define as roles `customer` (cria e consulta os próprios pedidos) e `operator` (gerencia estoque e consulta qualquer pedido). O serviço `keycloak-business-roles-bootstrap` roda a cada `docker compose up`, de forma idempotente, e:
+
+- cria as roles se ainda não existirem;
+- inclui `customer` nas roles padrão do realm, então toda conta nova, inclusive a criada por `POST /api/usuarios`, recebe `customer`; `operator` nunca é padrão;
+- atribui `customer` às contas que já existiam;
+- garante que o access token traga as roles em `realm_access.roles` (mapper `realm-roles` no client scope `pedido-estoque-api`);
+- cria o usuário `operator` local quando `KEYCLOAK_LOCAL_OPERATOR_PASSWORD` está preenchida no `.env` (usuário padrão `local.operator`).
+
+Para dar `operator` a outra conta, use o console do Keycloak (Users > Role mapping) ou `kcadm.sh add-roles --uusername <usuario> --rolename operator`. Confira o resultado decodificando o access token: `realm_access.roles` deve listar as roles da conta.
+
 ## Cadastro de usuários da aplicação
 
 O Compose cria, após o Keycloak ficar saudável, o cliente confidencial `pedido-estoque-user-registration` no realm `pedido-estoque`, concede apenas a role `manage-users` do `realm-management` e associa o client scope padrão `kc-admin-api`, necessário para o Admin API aceitar o token no Keycloak 26.8. A credencial do administrador é usada somente pelo bootstrap local; o serviço de cadastro usa seu próprio client ID/secret via client credentials.
